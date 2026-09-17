@@ -1,0 +1,17 @@
+Road_inspect
+
+This project is derived from RoadLab-Pro, originally developed by
+SoftTeco for the World Bank Transport Global Practice:
+https://github.com/WorldBank-Transport/RoadLab-Pro
+
+RoadLab-Pro is licensed under the Apache License, Version 2.0.
+A copy of the license is included in the LICENSE file.
+
+Modifications made in this fork:
+- Removed hardcoded release/debug keystore files and signing passwords
+  from app/build.gradle (must be supplied locally or via CI secrets).
+- Removed the hardcoded Google OAuth client secret and Google Maps API
+  key from source; these must now be supplied via environment variables
+  (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET) or resource overrides.
+- Removed local.properties (machine-specific, never meant to be
+  committed) and added a .gitignore for build artifacts and secrets.
