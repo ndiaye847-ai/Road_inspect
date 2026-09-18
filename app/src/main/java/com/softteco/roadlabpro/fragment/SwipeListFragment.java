@@ -4,7 +4,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -40,7 +40,7 @@ import com.softteco.roadlabpro.view.SwipeMenuItem;
 import com.softteco.roadlabpro.view.SwipeMenuListView;
 
 /**
- * MyIssueListFragment is an extends of {@link android.support.v4.app.ListFragment}.
+ * MyIssueListFragment is an extends of {@link androidx.fragment.app.ListFragment}.
  */
 public abstract class SwipeListFragment extends AbstractWBFragment {
 

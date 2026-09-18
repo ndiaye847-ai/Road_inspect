@@ -6,7 +6,7 @@ import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -48,7 +48,7 @@ public abstract class AbstractWBFragment extends AbstractFragment {
         updateTitle();
     }
 
-    public void replaceFragment(android.support.v4.app.Fragment fragment, boolean addToBackStack) {
+    public void replaceFragment(androidx.fragment.app.Fragment fragment, boolean addToBackStack) {
         if (getMainActivity() != null) {
             getMainActivity().replaceFragment(fragment, addToBackStack);
         }

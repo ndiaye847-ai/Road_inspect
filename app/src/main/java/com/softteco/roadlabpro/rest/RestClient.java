@@ -10,12 +10,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
 import com.softteco.roadlabpro.util.Constants;
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
+import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -28,12 +28,13 @@ import java.util.Date;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import okio.Buffer;
-import retrofit.GsonConverterFactory;
-import retrofit.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.Retrofit;
 
 public class RestClient {
 
@@ -69,7 +70,6 @@ public class RestClient {
                     .baseUrl(Constants.GOOGLE_BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create(gson))
                     .build();
-            retrofit.client().interceptors().add(new RequestInterceptor());
         }
         return retrofit;
     }
@@ -96,7 +96,7 @@ public class RestClient {
                     type = response.body().contentType();
                     responseBodyString = response.body().string();
                 }
-                response = response.newBuilder().body(ResponseBody.create(type, responseBodyString.getBytes())).build();
+                response = response.newBuilder().body(ResponseBody.create(responseBodyString, type)).build();
                 Log.i(TAG, "RESPONSE body is \n" + responseBodyString);
                 return response;
             } catch (Exception e) {
@@ -105,26 +105,27 @@ public class RestClient {
             return response;
         }
     }
-    
+
     public OkHttpClient getUnsafeOkHttpClient() {
         try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-            okHttpClient.setSslSocketFactory(getSslSocketFactory());
-            okHttpClient.setHostnameVerifier(new NullHostNameVerifier());
-            return okHttpClient;
+            X509TrustManager trustManager = new MyTrustManager();
+            OkHttpClient.Builder builder = new OkHttpClient.Builder();
+            builder.sslSocketFactory(getSslSocketFactory(trustManager), trustManager);
+            builder.hostnameVerifier(new NullHostNameVerifier());
+            builder.addInterceptor(new RequestInterceptor());
+            return builder.build();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static javax.net.ssl.SSLSocketFactory getSslSocketFactory() {
+    public static SSLSocketFactory getSslSocketFactory(X509TrustManager trustManager) {
         SSLContext sslContext = null;
         try {
             // Create an SSLContext that uses our TrustManager
             sslContext = SSLContext.getInstance("TLS");
-            TrustManager[] trustManagers = {new MyTrustManager()};
+            TrustManager[] trustManagers = {trustManager};
             sslContext.init(null, trustManagers, null);
-            sslContext.getSocketFactory();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (KeyManagementException e) {
@@ -148,7 +149,7 @@ public class RestClient {
 
         @Override
         public X509Certificate[] getAcceptedIssuers() {
-            return null;
+            return new X509Certificate[0];
         }
     }
 

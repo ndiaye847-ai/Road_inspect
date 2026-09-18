@@ -1,8 +1,8 @@
 package com.softteco.roadlabpro.fragment;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTabHost;
+import androidx.fragment.app.Fragment;
+import androidx.legacy.app.FragmentTabHost;
 
 import com.softteco.roadlabpro.R;
 import com.softteco.roadlabpro.menu.ScreenItems;

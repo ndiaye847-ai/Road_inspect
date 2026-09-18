@@ -1,8 +1,8 @@
 package com.softteco.roadlabpro.fragment;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTabHost;
+import androidx.fragment.app.Fragment;
+import androidx.legacy.app.FragmentTabHost;
 
 import com.softteco.roadlabpro.R;
 import com.softteco.roadlabpro.menu.ScreenItems;
@@ -10,7 +10,7 @@ import com.softteco.roadlabpro.sqlite.dao.RoadDAO;
 import com.softteco.roadlabpro.sqlite.model.FolderModel;
 
 /**
- * MyIssueListFragment is an extends of {@link android.support.v4.app.ListFragment}.
+ * MyIssueListFragment is an extends of {@link androidx.fragment.app.ListFragment}.
  */
 public class RoadFragment extends BaseTabFragment {
 

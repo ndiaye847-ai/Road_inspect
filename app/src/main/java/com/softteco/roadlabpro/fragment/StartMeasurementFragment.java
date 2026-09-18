@@ -7,7 +7,7 @@ import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;

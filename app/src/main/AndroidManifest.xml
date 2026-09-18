@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.softteco.roadlabpro">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission  android:name="android.permission.GET_TASKS"/>
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <!-- USE_CREDENTIALS was removed from the platform after API 22; it no longer exists. -->
 
     <supports-screens
         android:anyDensity="true"
@@ -32,6 +33,7 @@
         <activity
             android:name=".activity.SplashActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+            android:exported="true"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -57,6 +59,7 @@
         <activity
             android:name="com.dropbox.core.android.AuthActivity"
             android:configChanges="orientation|keyboard"
+            android:exported="true"
             android:launchMode="singleTask" >
             <intent-filter>
                 <data android:scheme="db-msomsfp2vv5fmfh" />

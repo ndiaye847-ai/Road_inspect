@@ -29,9 +29,9 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import retrofit.Callback;
-import retrofit.Response;
-import retrofit.Retrofit;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginGoogleDialog extends Dialog {
 
@@ -60,12 +60,13 @@ public class LoginGoogleDialog extends Dialog {
         web.loadUrl("about:blank");
         web.getSettings().setJavaScriptEnabled(true);
         web.getSettings().setDomStorageEnabled(true);
-        web.getSettings().setAppCacheEnabled(true);
+        // setAppCacheEnabled() was removed in API 33; the WebView HTML5 app cache
+        // API it controlled was removed from the platform entirely.
         web.getSettings().setAllowFileAccess(true);
         web.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE/*LOAD_DEFAULT*/);
         web.getSettings().setJavaScriptCanOpenWindowsAutomatically(false);
         web.getSettings().setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
-        web.getSettings().setDefaultZoom(WebSettings.ZoomDensity.FAR);
+        // setDefaultZoom()/ZoomDensity were removed from WebSettings in later API levels.
         web.setVerticalScrollBarEnabled(false);
         web.setHorizontalScrollBarEnabled(false);
         //web.setVisibility(View.GONE);
@@ -119,7 +120,7 @@ public class LoginGoogleDialog extends Dialog {
         showProgress(true);
         getApiHelper().obtainNewToken(authCode, new Callback<GoogleToken>() {
             @Override
-            public void onResponse(Response<GoogleToken> response, Retrofit retrofit) {
+            public void onResponse(Call<GoogleToken> call, Response<GoogleToken> response) {
                 GoogleToken googleToken = null;
                 if (response.body() != null) {
                     googleToken = response.body();
@@ -137,7 +138,7 @@ public class LoginGoogleDialog extends Dialog {
             }
 
             @Override
-            public void onFailure(Throwable t) {
+            public void onFailure(Call<GoogleToken> call, Throwable t) {
                 Log.e(TAG, "obtainNewToken", t);
                 closeDialog(false);
             }
@@ -159,7 +160,7 @@ public class LoginGoogleDialog extends Dialog {
     private void checkUserName() {
         checkUserName(new Callback<AccountData>() {
             @Override
-            public void onResponse(Response<AccountData> response, Retrofit retrofit) {
+            public void onResponse(Call<AccountData> call, Response<AccountData> response) {
                 AccountData data = null;
                 if (response != null) {
                     data = response.body();
@@ -178,7 +179,7 @@ public class LoginGoogleDialog extends Dialog {
                 closeDialog(true);
             }
             @Override
-            public void onFailure(Throwable t) {
+            public void onFailure(Call<AccountData> call, Throwable t) {
                 closeDialog(false);
                 Log.e(TAG, "checkUserName", t);
             }

@@ -3,7 +3,7 @@ package com.softteco.roadlabpro.fragment;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
@@ -33,7 +33,7 @@ import com.softteco.roadlabpro.view.SwipeMenuListView;
 
 
 /**
- * MyIssueListFragment is an extends of {@link android.support.v4.app.ListFragment}.
+ * MyIssueListFragment is an extends of {@link androidx.fragment.app.ListFragment}.
  */
 public class FolderListFragment extends SwipeListFragment {
 

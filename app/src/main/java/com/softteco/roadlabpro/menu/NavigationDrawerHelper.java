@@ -2,8 +2,8 @@ package com.softteco.roadlabpro.menu;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBar;
 
 import com.softteco.roadlabpro.R;
 import com.softteco.roadlabpro.RAApplication;

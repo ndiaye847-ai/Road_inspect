@@ -10,21 +10,19 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
+import androidx.fragment.app.FragmentActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
-import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.tasks.Task;
 import com.google.gson.Gson;
 import com.softteco.roadlabpro.BuildConfig;
 import com.softteco.roadlabpro.rest.RestClient;
@@ -42,14 +40,14 @@ import com.softteco.roadlabpro.util.ActivityUtil;
 import com.softteco.roadlabpro.util.Constants;
 import com.softteco.roadlabpro.util.FileUtils;
 import com.softteco.roadlabpro.util.PreferencesUtil;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.RequestBody;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 
-import retrofit.Callback;
-import retrofit.Response;
-import retrofit.Retrofit;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
-public class GoogleAPIHelper implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class GoogleAPIHelper {
 
     private final String TAG = GoogleAPIHelper.class.getName();
 
@@ -97,7 +95,7 @@ public class GoogleAPIHelper implements GoogleApiClient.ConnectionCallbacks, Goo
 //    private Dialog authDialog;
     private Gson gson;
 
-    private GoogleApiClient mGoogleApiClient;
+    private GoogleSignInClient mGoogleSignInClient;
     private GoogleSignInOptions gso;
     private SyncDataManager.OnSyncDataListener<Boolean> callback;
 
@@ -115,7 +113,7 @@ public class GoogleAPIHelper implements GoogleApiClient.ConnectionCallbacks, Goo
         loginGoogleAPI();
         this.callback = callback;
 	}
-	
+
 	public void logout() {
         PreferencesUtil.getInstance().setStringValue(GOOGLE_ACCESS_TOKEN_KEY, null);
         PreferencesUtil.getInstance().setGoogleAccountUserName("");
@@ -123,9 +121,9 @@ public class GoogleAPIHelper implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
     public void deactivate() {
-        if (mGoogleApiClient != null) {
-            mGoogleApiClient.disconnect();
-            mGoogleApiClient = null;
+        if (mGoogleSignInClient != null) {
+            mGoogleSignInClient.signOut();
+            mGoogleSignInClient = null;
         }
         this.callback = null;
     }
@@ -138,26 +136,18 @@ public class GoogleAPIHelper implements GoogleApiClient.ConnectionCallbacks, Goo
                 .requestEmail()
                 .requestProfile()
                 .requestId()
-                .requestScopes(new Scope(Scopes.PLUS_LOGIN), new Scope(Scopes.DRIVE_FILE))
+                // Scopes.PLUS_LOGIN was removed after the Google+ API shutdown; Drive
+                // access is requested through Scopes.DRIVE_FILE only.
+                .requestScopes(new Scope(Scopes.DRIVE_FILE))
                 .requestServerAuthCode(CLIENT_ID)
                 .build();
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(context)
-                .addApi(com.google.android.gms.auth.api.Auth.GOOGLE_SIGN_IN_API, gso)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-        }
-        if (!mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.connect();
-        } else {
-            sendAuthRequest();
-        }
+        mGoogleSignInClient = GoogleSignIn.getClient(context, gso);
+        sendAuthRequest();
     }
 
     private void sendAuthRequest() {
         Log.i("", "handleSignInResult login:");
-        Intent signInIntent = com.google.android.gms.auth.api.Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         ((Activity)context).startActivityForResult(signInIntent, GOOGLE_AUTH_REQUEST_CODE);
     }
 
@@ -402,7 +392,7 @@ public class GoogleAPIHelper implements GoogleApiClient.ConnectionCallbacks, Goo
     private void obtainNewToken(String authCode) {
         obtainNewToken(authCode, new Callback<GoogleToken>() {
             @Override
-            public void onResponse(Response<GoogleToken> response, Retrofit retrofit) {
+            public void onResponse(Call<GoogleToken> call, Response<GoogleToken> response) {
                 GoogleToken googleToken = null;
                 if (response.body() != null) {
                     googleToken = response.body();
@@ -420,7 +410,7 @@ public class GoogleAPIHelper implements GoogleApiClient.ConnectionCallbacks, Goo
             }
 
             @Override
-            public void onFailure(Throwable t) {
+            public void onFailure(Call<GoogleToken> call, Throwable t) {
                 Log.e(TAG, "obtainNewToken", t);
             }
         });
@@ -433,7 +423,7 @@ public class GoogleAPIHelper implements GoogleApiClient.ConnectionCallbacks, Goo
     private void checkUserName() {
         checkUserName(new Callback<AccountData>() {
             @Override
-            public void onResponse(Response<AccountData> response, Retrofit retrofit) {
+            public void onResponse(Call<AccountData> call, Response<AccountData> response) {
                 AccountData data = null;
                 if (response != null) {
                     data = response.body();
@@ -454,26 +444,10 @@ public class GoogleAPIHelper implements GoogleApiClient.ConnectionCallbacks, Goo
                 }
             }
             @Override
-            public void onFailure(Throwable t) {
+            public void onFailure(Call<AccountData> call, Throwable t) {
                 Log.e(TAG, "checkUserName", t);
             }
         });
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        Log.i(TAG, "onConnected, bundle: " + bundle);
-        sendAuthRequest();
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Log.i(TAG, "onConnectionSuspended");
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult result) {
-        Log.i(TAG, "onConnectionFailed: connectionResult: " + result);
     }
 
     protected void onResume() {
@@ -484,18 +458,18 @@ public class GoogleAPIHelper implements GoogleApiClient.ConnectionCallbacks, Goo
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i(TAG, "onActivityResult: data: " + ActivityUtil.dumpIntent(data));
-        if (requestCode == GOOGLE_AUTH_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            GoogleSignInResult result = com.google.android.gms.auth.api.Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            if (result.isSuccess()) {
-                // Signed in successfully, show authenticated UI.
-                GoogleSignInAccount acct = result.getSignInAccount();
+        if (requestCode == GOOGLE_AUTH_REQUEST_CODE) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                GoogleSignInAccount acct = task.getResult(ApiException.class);
                 String authCode = acct.getServerAuthCode();
                 Log.i(TAG, "onActivityResult: authCode: " + authCode);
                 if (!TextUtils.isEmpty(authCode)) {
                     obtainNewToken(authCode);
                 }
-            } else {
+            } catch (ApiException e) {
                 // Signed out, show unauthenticated UI.
+                Log.e(TAG, "onActivityResult: sign-in failed", e);
             }
         }
     }

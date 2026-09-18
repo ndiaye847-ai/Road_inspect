@@ -2,7 +2,7 @@ package com.softteco.roadlabpro.fragment;
 
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,33 +12,33 @@ import android.view.ViewGroup;
 import com.softteco.roadlabpro.activity.MainActivity;
 
 /**
- * AbstractFragment is an extends of {@link android.support.v4.app.Fragment}.
+ * AbstractFragment is an extends of {@link androidx.fragment.app.Fragment}.
  */
 public abstract class AbstractFragment extends Fragment {
 
     /**
-     * The method returns id layout for the current @see {@link android.support.v4.app.Fragment}.
+     * The method returns id layout for the current @see {@link androidx.fragment.app.Fragment}.
      *
      * @return id layout
      */
     public abstract int getLayoutFragmentResources();
 
     /**
-     * The method returns id menu for the current @see {@link android.support.v4.app.Fragment}.
+     * The method returns id menu for the current @see {@link androidx.fragment.app.Fragment}.
      *
      * @return id menu
      */
     public abstract int getMenuFragmentResources();
 
     /**
-     * The method returns type fragment for the current @see {@link android.support.v4.app.Fragment}.
+     * The method returns type fragment for the current @see {@link androidx.fragment.app.Fragment}.
      *
      * @return type fragment
      */
     public abstract int getTypeFragment();
 
     /**
-     * The method returns indicator for navigation drawer for the current @see {@link android.support.v4.app.Fragment}.
+     * The method returns indicator for navigation drawer for the current @see {@link androidx.fragment.app.Fragment}.
      *
      * @return indicator. if true to enable, false to disable
      */

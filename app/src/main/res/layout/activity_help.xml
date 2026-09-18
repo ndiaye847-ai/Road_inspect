@@ -46,7 +46,7 @@
         android:layout_below="@+id/help_lable"
         android:orientation="vertical">
 
-        <android.support.v4.view.ViewPager
+        <androidx.viewpager.widget.ViewPager
             android:id="@+id/ac_help_pager"
             android:layout_width="match_parent"
             android:layout_height="250dp" />
