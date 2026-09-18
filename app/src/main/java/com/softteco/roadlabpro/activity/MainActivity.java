@@ -1,11 +1,15 @@
 package com.softteco.roadlabpro.activity;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBar;
@@ -91,10 +95,58 @@ public class MainActivity extends BaseFragmentActivity implements
     private long lastTime = 0;
     private long forceSyncLastTime = 0;
 
+    // Dangerous permissions the app relies on (GPS tracking, voice comments,
+    // account sync). targetSdk 34 requires these to be requested at runtime -
+    // the app crashed with a SecurityException on first use of any of them
+    // before this was added, since it never requested them before.
+    private static final int PERMISSIONS_REQUEST_CODE = 4242;
+    private static final String[] REQUIRED_PERMISSIONS = {
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.GET_ACCOUNTS,
+    };
+
+    private boolean hasLocationPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestMissingPermissions() {
+        java.util.List<String> missing = new java.util.ArrayList<>();
+        for (String permission : REQUIRED_PERMISSIONS) {
+            if (ContextCompat.checkSelfPermission(this, permission)
+                    != PackageManager.PERMISSION_GRANTED) {
+                missing.add(permission);
+            }
+        }
+        if (!missing.isEmpty()) {
+            ActivityCompat.requestPermissions(this,
+                    missing.toArray(new String[0]), PERMISSIONS_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSIONS_REQUEST_CODE) {
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, R.string.permissions_required_toast, Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+            // Re-run onCreate now that permissions are granted, instead of
+            // duplicating its GPS/audio setup logic here.
+            recreate();
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getGpsDetector() != null) {
+        requestMissingPermissions();
+        if (getGpsDetector() != null && hasLocationPermission()) {
             getGpsDetector().init();
         }
         setContentView(R.layout.activity_main);
@@ -106,7 +158,7 @@ public class MainActivity extends BaseFragmentActivity implements
         intervalsRecordHelper = new IntervalsRecordHelper();
         intervalsRecordHelper.init(this);
         intervalsRecordHelper.setOnIntervalCalculatedListener(this);
-        if (!checkGPS(GpsManager.GPS_ENABLED_CODE_AUTO)) {
+        if (hasLocationPermission() && !checkGPS(GpsManager.GPS_ENABLED_CODE_AUTO)) {
             initGpsDetector();
         }
         PreferencesUtil.getInstance(this).generateDataRecordSession();

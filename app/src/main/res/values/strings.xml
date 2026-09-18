@@ -83,6 +83,7 @@
     <string name="hide_processed_items_str">Hide calculated data items list</string>
 
     <string name="allow_gps_text">GPS sensor is disabled. Would you like to enable it?</string>
+    <string name="permissions_required_toast">Location, microphone and account permissions are required for this app to work correctly.</string>
     <string name="yes_button_txt">Yes</string>
     <string name="no_button_txt">No</string>
     <string name="ok_btn_txt">OK</string>

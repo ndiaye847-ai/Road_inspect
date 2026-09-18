@@ -19,18 +19,7 @@ import okhttp3.ResponseBody;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Date;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import okio.Buffer;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -66,7 +55,7 @@ public class RestClient {
                     .create();
 
             retrofit = new Retrofit.Builder()
-                    .client(getUnsafeOkHttpClient())
+                    .client(buildHttpClient())
                     .baseUrl(Constants.GOOGLE_BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create(gson))
                     .build();
@@ -106,59 +95,13 @@ public class RestClient {
         }
     }
 
-    public OkHttpClient getUnsafeOkHttpClient() {
-        try {
-            X509TrustManager trustManager = new MyTrustManager();
-            OkHttpClient.Builder builder = new OkHttpClient.Builder();
-            builder.sslSocketFactory(getSslSocketFactory(trustManager), trustManager);
-            builder.hostnameVerifier(new NullHostNameVerifier());
-            builder.addInterceptor(new RequestInterceptor());
-            return builder.build();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static SSLSocketFactory getSslSocketFactory(X509TrustManager trustManager) {
-        SSLContext sslContext = null;
-        try {
-            // Create an SSLContext that uses our TrustManager
-            sslContext = SSLContext.getInstance("TLS");
-            TrustManager[] trustManagers = {trustManager};
-            sslContext.init(null, trustManagers, null);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        }
-        if (sslContext != null) {
-            return sslContext.getSocketFactory();
-        }
-        return null;
-    }
-
-    private static class MyTrustManager implements X509TrustManager {
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[0];
-        }
-    }
-
-    public static class NullHostNameVerifier implements HostnameVerifier {
-
-        @Override
-        public boolean verify(String hostname, SSLSession session) {
-            return true;
-        }
-
+    // Previously this built an OkHttpClient with a trust-all X509TrustManager and a
+    // hostname verifier that accepted every host - i.e. no TLS validation at all,
+    // a man-in-the-middle exposure on every request this app makes. It now relies
+    // on the platform's default trust store and hostname verification instead.
+    private OkHttpClient buildHttpClient() {
+        return new OkHttpClient.Builder()
+                .addInterceptor(new RequestInterceptor())
+                .build();
     }
 }
