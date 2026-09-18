@@ -31,6 +31,14 @@ android {
     // itself shut down in 2019). This restores compile-time access without a rewrite.
     useLibrary 'org.apache.http.legacy'
 
+    // AGP 8 stopped generating BuildConfig by default; this project's code
+    // (buildConfigField below, BuildConfig.FAKE, BuildConfig.GOOGLE_CLIENT_ID/
+    // SECRET in GoogleAPIHelper.java) needs it explicitly turned back on, or
+    // the build fails with "cannot find symbol BuildConfig".
+    buildFeatures {
+        buildConfig true
+    }
+
     lintOptions {
         disable 'InvalidPackage'
         abortOnError true
